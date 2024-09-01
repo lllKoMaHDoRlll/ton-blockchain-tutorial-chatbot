@@ -1,5 +1,7 @@
 import { Telegraf } from "telegraf";
 import dotenv from "dotenv";
+import { Address, beginCell, toNano } from "ton-core";
+import qs from "qs";
 
 dotenv.config();
 
@@ -18,8 +20,30 @@ bot.start((ctx) => {
 });
 
 bot.hears("Increment by 3", (ctx) => {
-    // sending increment transaction
-    ctx.reply("Incremented by 3");
+
+    const messageBody = beginCell()
+        .storeUint(1, 32)
+        .storeUint(3, 32)
+    .endCell();
+    
+    let link = 'https://app.tonkeeper.com/transfer/' +
+        Address.parse("EQBwYji2MLP888Rf8CsnM5OdvKPZSQvhpwSYz-u3tu4O-G6C").toString({testOnly: true}) + "?" +
+        qs.stringify({
+            text: "Increment transaction",
+            amount: toNano("0.05").toString(10),
+            bin: messageBody.toBoc({idx: false}).toString("base64"),
+        });
+
+    ctx.reply("To increment counter by 3, please sign a transaction:", {
+        reply_markup: {
+            inline_keyboard: [
+                [{
+                    text: "Sign transaction",
+                    url: link
+                }],
+            ],
+        },
+    });
 });
 
 bot.hears("Deposit 1 TON", (ctx) => {
