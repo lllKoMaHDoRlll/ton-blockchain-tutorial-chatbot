@@ -47,8 +47,28 @@ bot.hears("Increment by 3", (ctx) => {
 });
 
 bot.hears("Deposit 1 TON", (ctx) => {
-    // sending deposit transaction
-    ctx.reply("Deposited 1 TON");
+    const messageBody = beginCell()
+        .storeUint(2, 32)
+    .endCell();
+    
+    let link = 'https://app.tonkeeper.com/transfer/' +
+        Address.parse("EQBwYji2MLP888Rf8CsnM5OdvKPZSQvhpwSYz-u3tu4O-G6C").toString({testOnly: true}) + "?" +
+        qs.stringify({
+            text: "Deposit funds",
+            amount: toNano("1").toString(10),
+            bin: messageBody.toBoc({idx: false}).toString("base64"),
+        });
+
+    ctx.reply("To deposit 1 TON, please sign a transaction:", {
+        reply_markup: {
+            inline_keyboard: [
+                [{
+                    text: "Sign transaction",
+                    url: link
+                }],
+            ],
+        },
+    });
 });
 
 bot.hears("Withdraw 1 TON", (ctx) => {
